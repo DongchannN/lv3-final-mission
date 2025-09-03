@@ -60,6 +60,7 @@ jobs:
 
       - name: Deploy Application
         run: |
+          sleep 10
           sudo cp /tmp/deployment/*.jar /home/ubuntu/lv3-final-mission/
 
           cd /home/ubuntu/lv3-final-mission
