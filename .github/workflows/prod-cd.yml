@@ -57,6 +57,7 @@ jobs:
       - name: Kill Application
         run: |
           pkill -f 'java.*lv3-final-mission' || true
+          sleep 5
 
       - name: Deploy Application
         run: |
