@@ -55,8 +55,11 @@ jobs:
 
       - name: Kill Application
         run: |
-          pkill -f 'java.*lv3-final-mission' || true
-          sleep 5
+          PID=$(lsof -ti:8080)
+          if [ -n "$PID" ]; then
+            kill -15 $PID
+            sleep 5
+          fi
 
       - name: Deploy Application
         run: |
