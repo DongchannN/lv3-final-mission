@@ -53,17 +53,14 @@ jobs:
           name: spring-boot-app
           path: /tmp/deployment
 
-      - name: Kill Application
+      - name: Copy JAR to server
         run: |
-          sudo lsof -ti:8080 | xargs -r kill -15
-          sleep 5
-
-      - name: Deploy Application
-        run: |
-          sleep 10
           sudo cp /tmp/deployment/*.jar /home/ubuntu/lv3-final-mission/
-
-          cd /home/ubuntu/lv3-final-mission
-          sudo nohup java -jar *.jar > app.log 2>&1 &
-
           rm -rf /tmp/deployment
+
+      - name: Grant execute permission to deploy script
+        run: sudo chmod +x /home/ubuntu/lv3-final-mission/deploy.sh
+
+      - name: Execute Deploy Script
+        run: |
+          sudo /home/ubuntu/lv3-final-mission/deploy.sh
