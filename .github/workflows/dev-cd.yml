@@ -53,11 +53,12 @@ jobs:
           name: spring-boot-app
           path: /tmp/deployment
 
-      - name: Deploy Application
+      - name: Kill Application
         run: |
           pkill -f 'java.*lv3-final-mission' || true
-          sleep 3
 
+      - name: Deploy Application
+        run: |
           sudo cp /tmp/deployment/*.jar /home/ubuntu/lv3-final-mission/
 
           cd /home/ubuntu/lv3-final-mission
