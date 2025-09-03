@@ -1,0 +1,33 @@
+name: Backend CD
+
+on:
+  workflow_run:
+    workflows: ["Backend CI"]
+    types: [completed]
+    branches: ["develop"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: [self-hosted, dev]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Download JAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: spring-boot-app
+          path: /tmp/deployment
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Deploy Application
+        run: |
+          pkill -f 'java.*lv3-final-mission' || true
+
+          sudo cp /tmp/deployment/*.jar /home/ubuntu/lv3-final-mission/
+
+          cd /home/ubuntu/lv3-final-mission
+          nohup java -jar lv3-final-mission-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+
+          rm -rf /tmp/deployment
