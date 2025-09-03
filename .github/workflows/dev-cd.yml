@@ -1,17 +1,50 @@
-name: Backend CD
+name: Backend CD Dev
 
 on:
-  workflow_run:
-    workflows: ["Backend CI"]
-    types: [completed]
-    branches: ["develop"]
+  push:
+    branches: [ "develop" ]
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Gradle Caching
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build JAR
+        run: ./gradlew bootJar
+
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spring-boot-app
+          path: build/libs/*.jar
+
+  download-and-deploy:
     name: Deploy to EC2
     runs-on: [self-hosted, dev]
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: build-and-upload
 
     steps:
       - name: Download JAR Artifact
@@ -19,7 +52,6 @@ jobs:
         with:
           name: spring-boot-app
           path: /tmp/deployment
-          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Deploy Application
         run: |
